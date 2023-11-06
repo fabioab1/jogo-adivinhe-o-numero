@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Adivinhe o número</title>
+
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+
+      body {
+        width: 50%;
+        max-width: 800px;
+        min-width: 480px;
+        margin: 0 auto;
+      }
+      
+      .form input[type="number"] {
+        width: 200px;
+      }
+
+      .lastResult {
+        color: white;
+        padding: 3px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Jogo de adivinhe o número</h1>
+
+    <p>Um número aleatório entre 1 e 100 será gerado, seu objetivo é acertar esse número em 10 tentativas digitando o seu palpite. Caso você erre, será indicado se o número verdadeiro é um valor maior ou menor que o digitado.</p>
+
+    <div class="form">
+      <label for="guessField">Digite um palpite: </label>
+      <input type="number" min="1" max="100" required id="guessField" class="guessField">
+      <input type="submit" value="Tentar palpite" class="guessSubmit">
+
+    <div class="resultParas">
+      <p class="guesses"></p>
+      <p class="lastResult"></p>
+      <p class="correctNumber"></p>
+      <p class="lowOrHi"></p>
+    </div>
+
+    <script>
+
+      var randomNumber = Math.floor(Math.random() * 100) + 1; // Variável que determina um número aleatório por meio do objeto Math
+    
+      var guesses = document.querySelector(".guesses"); // Estrutura de uma variável que referencia um parágrafo, pegando o valor do elemento referenciado
+      var lastResult = document.querySelector(".lastResult");
+      var correctNumber = document.querySelector(".correctNumber");
+      var lowOrHi = document.querySelector(".lowOrHi");
+
+      var guessField = document.querySelector(".guessField"); // Mesma estrutura, mas dessa vez, referenciando um elemento input, capturando também suas propriedades (objeto)
+      var guessSubmit = document.querySelector(".guessSubmit");
+
+      var guessCount = 1; // Criação de uma variável de contador começando de 1
+      var resetButton; 
+    
+      /*
+        A variável guessField pode chamar a função focus() pois a mesma é um método do objeto input, e por a variável
+        estar referenciando o input, podemos usar e chamar tal função
+      */
+
+      guessField.focus() 
+
+      /*
+        Abaixo temos a criação de uma função que irá checar se o número digitado pelo usuário é o mesmo que o verdadeiro
+        escolhido aleatoriamente pela variável randomNumber.
+      */
+
+      function checkGuess() { 
+        var userGuess = Number(guessField.value); // Variável que armazena o número digitado pelo usuário no input guessField (por meio do comando guessField.value)
+
+        /*
+            Abaixo, também temos o começo de uma estrutura condicional, que irá rodar quando o contador (guessCount) for igual
+            a 1, ou seja, quando o jogo estiver sendo rodado pela primeira vez. Se o teste retornar true, então o texto do parágrafo
+            até então oculto, será alterado
+        */
+
+        if (guessCount === 1) {
+            guesses.textContent = "Palpites anteriores: ";
+        }
+        guesses.textContent += userGuess + " "; // Variável sendo concatenada e sendo sobrescrita pela própria variável mais o valor inserido pelo usuário
+
+        /*
+            Nessa estrutura abaixo, temos um teste que irá retornar true se o número digitado no input pelo usuário que
+            estiver armazenado na variável userGuess for igual ao número aleatório gerado anteriormente
+        */
+
+        if (userGuess === randomNumber) {
+            lastResult.textContent = "Parabéns! Você acertou!";
+            lastResult.style.backgroundColor = "green";
+            lowOrHi.textContent = "";
+            configGameOver();
+
+        } else if (guessCount === 10) { // Se não for o mesmo número que o gerado, chame a função de fim de jogo
+            lastResult.textContent = "!!!GAME OVER!!!";
+            correctNumber.textContent = "Número correto: " + randomNumber;
+            lowOrHi.textContent = "";
+            configGameOver();
+        } else { // Se nenhuma das condições acima for atendida, então mude o conteúdo dos parágrafos
+            lastResult.textContent = "Errado!";
+            lastResult.style.backgroundColor = "red";
+            if (userGuess < randomNumber) { // Condição para caso o número inserido pelo usuário esteja muito abaixo ou acima do verdadeiro
+                lowOrHi.textContent = "Seu palpite está muito baixo!";
+            } else if (userGuess > randomNumber) {
+                lowOrHi.textContent = "Seu palpite está muito alto!";
+            }
+        }
+
+        guessCount++; // Incremento no contador (significa guessCount recebe + 1)
+        guessField.value = "";
+        guessField.focus();
+      }
+
+      /*
+        Eventos são ações que visualizam acontecimentos no navegador, podemos adicionar EventListener que é um construtor que realiza
+        tal função de observar algum evento por meio do comando addEventListener, neste caso abaixo, ele irá observar quando o evento do tipo
+        "click" (clique do mouse) ocorrer no botão, conforme guessSubmit.
+      */
+
+      guessSubmit.addEventListener("click", checkGuess);
+
+      function configGameOver() {
+        guessField.disabled = true;
+        guessSubmit.disabled = true;
+        resetButton = document.createElement("button");
+        resetButton.textContent = "Iniciar um novo jogo";
+        document.body.appendChild(resetButton);
+        resetButton.addEventListener("click", restartGame);
+      }
+
+      function restartGame() {
+        guessCount = 1;
+
+        var resetParas = document.querySelectorAll(".resultParas p");
+        for (var i = 0; i < resetParas.length; i++) {
+            resetParas[i].textContent = "";
+        }
+
+        resetButton.parentNode.removeChild(resetButton);
+
+        guessField.disabled = false;
+        guessSubmit.disabled = false;
+        guessField.value = "";
+        guessField.focus();
+
+        lastResult.style.backgroundColor = "white";
+
+        randomNumber = Math.floor(Math.random() * 100) + 1;
+      }
+
+      /*
+        document.querySelector = querySelector() é um método do objeto document que pega um pedaço de informação do
+        elemento selecionado que a gente referencia
+
+        variavelQualquer.textContent = ""; = Altera o conteúdo de uma variável, neste caso, uma variável referenciando um parágrafo
+        no qual o conteúdo do mesmo é um texto
+
+        guesses.style.backgroundColor = "yellow"; = Exemplo do uso do método backgroundColor do objeto style, todos os elementos
+        de uma página possuem uma propriedade "style", nas suas propriedades estão inseridos todos os estilos incorporados
+        de CSS, nos permitindo alterar dinamicamente novos estilos CSS nos elementos via JavaScript.
+
+        for (var i = 0; i < 21; i++) {
+
+        } = Estrutura do laço de repetição for em JavaScript, em que é determinado a variável, seu valor inicial
+        sua condição de repetição e o incremento, tudo na mesma linha e dentro do parêntese.
+
+        function nomeFuncao() {
+
+        } = Estrutura para criar uma nova função.
+
+        var resultParas = document.querySelectorAll("resultParas p"); = Neste caso, o querySelectorAll() irá referenciar todos
+        os parágrafos contidos na div "resultParas", armazenando de uma maneira semelhante a um vetor em python
+
+        Jogo criado com o guia prático da MDN: https://developer.mozilla.org/pt-BR/docs/Learn/JavaScript/First_steps/A_first_splash
+      */
+
+    </script>
+  </body>
+</html>
